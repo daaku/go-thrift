@@ -107,7 +107,7 @@ Include ← "include" _ file:Literal EOS {
 
 Statement ← Include / Namespace / Const / Enum / TypeDef / Struct / Exception / Union / Service
 
-Namespace ← "namespace" _ scope:[*a-z.-]+ _ ns:Identifier EOS {
+Namespace ← "namespace" _ scope:[*a-z.-_]+ _ ns:Identifier EOS {
 	return &namespace{
 		scope: ifaceSliceToString(scope),
 		namespace: string(ns.(Identifier)),
@@ -319,7 +319,7 @@ CppType ← "cpp_type" cppType:Literal {
 	return cppType, nil
 }
 
-ConstValue ← Literal / DoubleConstant / IntConstant / ConstMap / ConstList / Identifier
+ConstValue ← Literal / HexConstant / DoubleConstant / IntConstant / ConstMap / ConstList / Identifier
 
 TypeAnnotations ← '(' __ annotations:TypeAnnotation* ')' {
 	var anns []*Annotation
@@ -342,6 +342,10 @@ TypeAnnotation ← name:Identifier _ value:('=' __ value:Literal { return value,
 
 IntConstant ← [-+]? Digit+ {
 	return strconv.ParseInt(string(c.text), 10, 64)
+}
+
+HexConstant ← '0' [xX] HexDigit+ {
+	return string(c.text), nil
 }
 
 DoubleConstant ← [+-]? Digit* '.' Digit* ( ['Ee'] IntConstant )? {
@@ -387,6 +391,7 @@ Identifier ← (Letter / '_')+ (Letter / Digit / [._])* {
 ListSeparator ← [,;]
 Letter ← [A-Za-z]
 Digit ← [0-9]
+HexDigit ← [A-Fa-f0-9]
 
 //
 
